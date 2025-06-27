@@ -1,5 +1,5 @@
 package com.myapp.aw.store;
-
+import com.myapp.aw.store.service.OrderService;
 import com.myapp.aw.store.database.DatabaseManager;
 import com.myapp.aw.store.model.Product;
 import com.myapp.aw.store.model.Role;
@@ -19,6 +19,7 @@ public class StoreApplication {
         ProductRepository productRepository = new ProductRepository();
         UserRepository userRepository = new UserRepository();
         OrderRepository orderRepository = new OrderRepository();
+        OrderService orderService = new OrderService(orderRepository, productRepository);
 
         try {
             setupInitialData(userRepository, productRepository);
@@ -27,7 +28,7 @@ public class StoreApplication {
         }
 
         try {
-            WebServer server = new WebServer(productRepository, userRepository, orderRepository);
+            WebServer server = new WebServer(productRepository, userRepository, orderRepository, orderService);
             server.start();
             System.out.println("Dashboard is running at: http://localhost:8080/");
         } catch (Exception e) {

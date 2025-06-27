@@ -21,23 +21,22 @@ public final class HandlerUtils {
 
     private HandlerUtils() {}
 
-    public static Map<String, String> parseGetQuery(String query) {
-        if (query == null || query.isEmpty()) {
-            return Collections.emptyMap();
+    public static String convertProductListToOrderFormTable(List<Product> products) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table>");
+        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th><th>Quantity to Order</th></tr>");
+        for (Product p : products) {
+            sb.append("<tr>");
+            sb.append("<td>").append(p.getId()).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getSku())).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getName())).append("</td>");
+            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
+            sb.append("<td>").append(p.getStock()).append("</td>");
+            sb.append("<td><input type='number' class='quantity-input' name='quantity_").append(p.getId()).append("' min='0' placeholder='0'></td>");
+            sb.append("</tr>");
         }
-        Map<String, String> map = new HashMap<>();
-        String[] pairs = query.split("&");
-        for (String pair : pairs) {
-            int idx = pair.indexOf("=");
-            try {
-                String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
-                String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : "";
-                map.put(key, value);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-        return map;
+        sb.append("</table>");
+        return sb.toString();
     }
 
     public static String convertProductListToHtmlTable(List<Product> products) {
@@ -57,24 +56,23 @@ public final class HandlerUtils {
         return sb.toString();
     }
 
-    public static String convertProductListToJson(List<Product> products) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = 0; i < products.size(); i++) {
-            Product p = products.get(i);
-            sb.append("{");
-            sb.append("\"id\":").append(p.getId()).append(",");
-            sb.append("\"sku\":\"").append(escapeJson(p.getSku())).append("\",");
-            sb.append("\"name\":\"").append(escapeJson(p.getName())).append("\",");
-            sb.append("\"price\":").append(p.getPrice()).append(",");
-            sb.append("\"stock\":").append(p.getStock());
-            sb.append("}");
-            if (i < products.size() - 1) {
-                sb.append(",");
+    public static Map<String, String> parseGetQuery(String query) {
+        if (query == null || query.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> map = new HashMap<>();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            try {
+                String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), "UTF-8") : pair;
+                String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), "UTF-8") : "";
+                map.put(key, value);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         }
-        sb.append("]");
-        return sb.toString();
+        return map;
     }
 
     public static String convertUserListToHtmlTable(List<User> users) {
@@ -140,6 +138,26 @@ public final class HandlerUtils {
             }
         }
         sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    public static String convertProductListToJson(List<Product> products) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < products.size(); i++) {
+            Product p = products.get(i);
+            sb.append("{");
+            sb.append("\"id\":").append(p.getId()).append(",");
+            sb.append("\"sku\":\"").append(escapeJson(p.getSku())).append("\",");
+            sb.append("\"name\":\"").append(escapeJson(p.getName())).append("\",");
+            sb.append("\"price\":").append(p.getPrice()).append(",");
+            sb.append("\"stock\":").append(p.getStock());
+            sb.append("}");
+            if (i < products.size() - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
         return sb.toString();
     }
 

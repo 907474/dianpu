@@ -3,6 +3,7 @@ package com.myapp.aw.store.webserver;
 import com.myapp.aw.store.repository.OrderRepository;
 import com.myapp.aw.store.repository.ProductRepository;
 import com.myapp.aw.store.repository.UserRepository;
+import com.myapp.aw.store.service.OrderService;
 import com.myapp.aw.store.webserver.handlers.*;
 import com.sun.net.httpserver.HttpServer;
 
@@ -13,11 +14,13 @@ public class WebServer {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
-    public WebServer(ProductRepository productRepository, UserRepository userRepository, OrderRepository orderRepository) {
+    public WebServer(ProductRepository productRepository, UserRepository userRepository, OrderRepository orderRepository, OrderService orderService) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
+        this.orderService = orderService;
     }
 
     public void start() throws IOException {
@@ -27,8 +30,11 @@ public class WebServer {
         server.createContext("/products", new HtmlProductsHandler(this.productRepository));
         server.createContext("/users", new HtmlUsersHandler(this.userRepository));
         server.createContext("/orders", new HtmlOrdersHandler(this.orderRepository));
+        server.createContext("/order-form", new HtmlOrderFormHandler(this.productRepository));
+
         server.createContext("/api/products", new JsonProductsHandler(this.productRepository));
         server.createContext("/api/users/add", new UserAddHandler(this.userRepository));
+        server.createContext("/api/orders/add", new AddOrderHandler(this.orderService));
 
         server.setExecutor(null);
         server.start();
