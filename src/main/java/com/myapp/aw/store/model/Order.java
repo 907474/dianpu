@@ -12,7 +12,7 @@ public class Order {
     private List<OrderItem> items;
     private double totalPrice;
     private LocalDateTime orderDate;
-    private String status; // e.g., "COMPLETED", "CANCELLED"
+    private String status;
 
 
     public Order(long userId, List<OrderItem> items) {
@@ -36,7 +36,7 @@ public class Order {
     public void setId(long id) { this.id = id; }
     public long getUserId() { return userId; }
     public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; } // Needed for loading from DB
+    public void setItems(List<OrderItem> items) { this.items = items; }
     public double getTotalPrice() { return totalPrice; }
     public LocalDateTime getOrderDate() { return orderDate; }
     public String getStatus() { return status; }

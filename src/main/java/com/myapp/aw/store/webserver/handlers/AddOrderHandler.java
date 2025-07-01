@@ -1,5 +1,8 @@
 package com.myapp.aw.store.webserver.handlers;
 
+import com.myapp.aw.store.model.Role;
+import com.myapp.aw.store.model.User;
+import com.myapp.aw.store.repository.UserRepository;
 import com.myapp.aw.store.service.OrderService;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -10,12 +13,15 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class AddOrderHandler implements HttpHandler {
     private final OrderService orderService;
+    private final UserRepository userRepository;
 
-    public AddOrderHandler(OrderService orderService) {
+    public AddOrderHandler(OrderService orderService, UserRepository userRepository) {
         this.orderService = orderService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -31,31 +37,45 @@ public class AddOrderHandler implements HttpHandler {
             String formData = br.readLine();
             Map<String, String> params = HandlerUtils.parseUrlEncodedFormData(formData);
 
-            long userId = Long.parseLong(params.get("userId"));
+            String username = params.get("username");
+            String orderData = params.get("orderData");
 
+            if (orderData == null || orderData.isEmpty()) {
+                HandlerUtils.sendResponse(exchange, 400, "Bad Request: Order data is missing.", "text/plain");
+                return;
+            }
+
+            if (username == null || username.trim().isEmpty()) {
+                username = "guest-" + System.currentTimeMillis();
+            }
+
+            Optional<User> userOpt = userRepository.findByUsername(username);
+            User user;
+            if (userOpt.isPresent()) {
+                user = userOpt.get();
+            } else {
+                user = new User(username, "", Role.CUSTOMER);
+                userRepository.save(user);
+            }
+
+            Map<String, String> orderParams = HandlerUtils.parseGetQuery(orderData);
             Map<Long, Integer> productQuantities = new HashMap<>();
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                String key = entry.getKey();
-                String value = entry.getValue();
-
-                if (key.startsWith("quantity_") && value != null && !value.isEmpty()) {
-                    try {
-                        int quantity = Integer.parseInt(value);
-                        if (quantity > 0) {
-                            long productId = Long.parseLong(key.substring("quantity_".length()));
-                            productQuantities.put(productId, quantity);
-                        }
-                    } catch (NumberFormatException e) {
+            for (Map.Entry<String, String> entry : orderParams.entrySet()) {
+                if (entry.getKey().startsWith("quantity_")) {
+                    long productId = Long.parseLong(entry.getKey().substring("quantity_".length()));
+                    int quantity = Integer.parseInt(entry.getValue());
+                    if (quantity > 0) {
+                        productQuantities.put(productId, quantity);
                     }
                 }
             }
 
             if (productQuantities.isEmpty()) {
-                HandlerUtils.sendResponse(exchange, 400, "Bad Request: No products with a valid quantity were selected.", "text/plain");
+                HandlerUtils.sendResponse(exchange, 400, "Bad Request: No products in order.", "text/plain");
                 return;
             }
 
-            orderService.createOrder(userId, productQuantities);
+            orderService.createOrder(user.getId(), productQuantities);
 
             exchange.getResponseHeaders().set("Location", "/orders");
             exchange.sendResponseHeaders(302, -1);

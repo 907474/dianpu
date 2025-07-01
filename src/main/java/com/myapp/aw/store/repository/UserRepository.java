@@ -12,7 +12,6 @@ import java.util.Optional;
 public class UserRepository {
 
     public User save(User user) throws SQLException {
-        // ... (save method is unchanged)
         String sql = "INSERT INTO users(username, password, role) VALUES(?,?,?)";
         try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,7 +29,6 @@ public class UserRepository {
     }
 
     public Optional<User> findByUsername(String username) throws SQLException {
-        // ... (findByUsername method is unchanged)
         String sql = "SELECT * FROM users WHERE username = ?";
         try (Connection conn = DatabaseManager.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
