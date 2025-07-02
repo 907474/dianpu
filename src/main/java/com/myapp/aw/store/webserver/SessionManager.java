@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
 
-    private static final String SESSION_COOKIE_NAME = "SESSION_TOKEN";
+    private static final String SESSION_COOKIE_NAME = "STORE_SESSION_ID";
     private final Map<String, User> activeSessions = new ConcurrentHashMap<>();
 
     public String createSession(User user) {
@@ -48,10 +48,13 @@ public class SessionManager {
     }
 
     public void setSessionCookie(HttpExchange exchange, String sessionId) {
-        exchange.getResponseHeaders().add("Set-Cookie", SESSION_COOKIE_NAME + "=" + sessionId + "; path=/");
+        // Set a long Max-Age (e.g., 1 year) to make the cookie persistent
+        String cookieValue = String.format("%s=%s; path=/; Max-Age=%d", SESSION_COOKIE_NAME, sessionId, 31536000);
+        exchange.getResponseHeaders().add("Set-Cookie", cookieValue);
     }
 
     public void clearSessionCookie(HttpExchange exchange) {
+        // Set Max-Age to 0 to instruct the browser to delete the cookie
         exchange.getResponseHeaders().add("Set-Cookie", SESSION_COOKIE_NAME + "=; path=/; Max-Age=0");
     }
 }

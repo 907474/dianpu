@@ -38,30 +38,31 @@ public class HtmlRestockHandler implements HttpHandler {
         sb.append("table { width: 100%; border-collapse: collapse; margin-top: 1em; }");
         sb.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
         sb.append("th { background-color: #f2f2f2; }");
-        sb.append("tr:nth-child(even) { background-color: #f9f9f9; }");
         sb.append("a { color: #007BFF; text-decoration: none; }");
         sb.append(".search-container { margin-bottom: 1em; }");
         sb.append("#searchInput { padding: 8px; margin-right: 5px; box-sizing: border-box; }");
         sb.append(".restock-input { width: 80px; }");
-        sb.append(".restock-btn { background-color: #17a2b8; color: white; border: none; padding: 5px 10px; cursor: pointer; }");
+        sb.append(".action-btn { border: none; padding: 5px 10px; cursor: pointer; color: white; text-decoration: none; display: inline-block; }");
+        sb.append(".restock-btn { background-color: #17a2b8; }");
+        sb.append(".edit-btn { background-color: #ffc107; }");
         sb.append("</style></head><body>");
-        sb.append("<h1>Restock Products</h1>");
+        sb.append("<h1>Restock & Edit Products</h1>");
         sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
         sb.append("<div class='search-container'>");
         sb.append("    <input type='text' id='searchInput' onkeyup='filterTable()' placeholder='Type to filter products by name...'>");
         sb.append("</div>");
-        sb.append("<table><thead><tr><th>ID</th><th>SKU</th><th>Name</th><th>Current Stock</th><th>Add Stock</th><th>Action</th></tr></thead><tbody>");
+        sb.append("<table><thead><tr><th>ID</th><th>SKU</th><th>Name</th><th>Current Stock</th><th>Add Stock</th><th>Actions</th></tr></thead><tbody>");
         for (Product p : products) {
             sb.append("<tr>");
             sb.append("<td>").append(p.getId()).append("</td>");
             sb.append("<td>").append(HandlerUtils.escapeHtml(p.getSku())).append("</td>");
             sb.append("<td>").append(HandlerUtils.escapeHtml(p.getName())).append("</td>");
             sb.append("<td>").append(p.getStock()).append("</td>");
-            sb.append("<td><form action='/api/products/restock' method='post' style='margin:0;padding:0;display:inline;'>");
+            sb.append("<td><form action='/api/products/restock' method='post' style='margin:0;padding:0;display:flex;align-items:center;'>");
             sb.append("<input type='hidden' name='productId' value='").append(p.getId()).append("'>");
             sb.append("<input type='number' name='amount' class='restock-input' min='1' required>");
-            sb.append("</td><td>");
-            sb.append("<button type='submit' class='restock-btn'>Restock</button></form></td>");
+            sb.append("<button type='submit' class='action-btn restock-btn' style='margin-left: 10px;'>Restock</button></form></td>");
+            sb.append("<td><a href='/edit-product?id=").append(p.getId()).append("' class='action-btn edit-btn'>Edit</a></td>");
             sb.append("</tr>");
         }
         sb.append("</tbody></table>");

@@ -21,6 +21,32 @@ public final class HandlerUtils {
 
     private HandlerUtils() {}
 
+    public static String generateEditProductForm(Product product) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title>Edit Product</title><style>");
+        sb.append("body { font-family: sans-serif; margin: 2em; }");
+        sb.append("form { background-color: #f9f9f9; padding: 1.5em; border: 1px solid #ddd; border-radius: 5px; max-width: 400px; }");
+        sb.append("input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }");
+        sb.append("input[type='submit'] { background-color: #007BFF; color: white; cursor: pointer; }");
+        sb.append("</style></head><body>");
+        sb.append("<h1>Edit Product: ").append(escapeHtml(product.getName())).append("</h1>");
+        sb.append("<p><a href='/restock'>&larr; Back to Restock Page</a></p>");
+        sb.append("<form action='/api/products/update' method='post'>");
+        sb.append("<input type='hidden' name='productId' value='").append(product.getId()).append("'>");
+        sb.append("<label for='sku'>SKU:</label><br>");
+        sb.append("<input type='text' id='sku' name='sku' value='").append(escapeHtml(product.getSku())).append("' required><br>");
+        sb.append("<label for='name'>Name:</label><br>");
+        sb.append("<input type='text' id='name' name='name' value='").append(escapeHtml(product.getName())).append("' required><br>");
+        sb.append("<label for='price'>Price:</label><br>");
+        sb.append("<input type='number' step='0.01' id='price' name='price' value='").append(product.getPrice()).append("' required><br>");
+        sb.append("<label for='stock'>Stock:</label><br>");
+        sb.append("<input type='number' id='stock' name='stock' value='").append(product.getStock()).append("' required><br><br>");
+        sb.append("<input type='submit' value='Save Changes'>");
+        sb.append("</form>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
     public static void redirect(HttpExchange exchange, String location) throws IOException {
         exchange.getResponseHeaders().set("Location", location);
         exchange.sendResponseHeaders(302, -1);
@@ -82,6 +108,7 @@ public final class HandlerUtils {
 
     public static String convertUserListToHtmlTable(List<User> users) {
         StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title>All Users</title><style>body{font-family:sans-serif;margin:2em}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background-color:#f2f2f2}tr:nth-child(even){background-color:#f9f9f9}a{color:#007BFF;text-decoration:none}</style></head><body>");
         sb.append("<h1>All Users</h1>");
         sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
         sb.append("<table>");
@@ -93,12 +120,21 @@ public final class HandlerUtils {
             sb.append("<td>").append(u.getRole()).append("</td>");
             sb.append("</tr>");
         }
-        sb.append("</table>");
+        sb.append("</table></body></html>");
         return sb.toString();
     }
 
     public static String convertOrderListToHtmlTable(List<Order> orders) {
         StringBuilder sb = new StringBuilder();
+        sb.append("<html><head><title>All Orders</title><style>");
+        sb.append("body { font-family: sans-serif; margin: 2em; }");
+        sb.append(".order-card { border: 1px solid #ccc; border-radius: 5px; margin-bottom: 1em; padding: 1em; }");
+        sb.append(".order-header { font-weight: bold; margin-bottom: 0.5em; }");
+        sb.append("table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }");
+        sb.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+        sb.append("th { background-color: #f2f2f2; }");
+        sb.append("a { color: #007BFF; text-decoration: none; }");
+        sb.append("</style></head><body>");
         sb.append("<h1>All Orders</h1>");
         sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
 
@@ -125,6 +161,7 @@ public final class HandlerUtils {
                 sb.append("</table></div>");
             }
         }
+        sb.append("</body></html>");
         return sb.toString();
     }
 

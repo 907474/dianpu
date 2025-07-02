@@ -1,9 +1,8 @@
 package com.myapp.aw.store.webserver.handlers;
 
-import com.myapp.aw.store.model.Role;
 import com.myapp.aw.store.model.User;
-import com.myapp.aw.store.repository.UserRepository;
 import com.myapp.aw.store.service.OrderService;
+import com.myapp.aw.store.webserver.SessionManager;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -17,46 +16,30 @@ import java.util.Optional;
 
 public class AddOrderHandler implements HttpHandler {
     private final OrderService orderService;
-    private final UserRepository userRepository;
+    private final SessionManager sessionManager;
 
-    public AddOrderHandler(OrderService orderService, UserRepository userRepository) {
+    public AddOrderHandler(OrderService orderService, SessionManager sessionManager) {
         this.orderService = orderService;
-        this.userRepository = userRepository;
+        this.sessionManager = sessionManager;
     }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        Optional<User> userOpt = sessionManager.getSessionUser(exchange);
+        if (!userOpt.isPresent()) {
+            HandlerUtils.sendResponse(exchange, 401, "Unauthorized", "text/plain");
+            return;
+        }
+
         if (!"POST".equals(exchange.getRequestMethod())) {
             HandlerUtils.sendResponse(exchange, 405, "Method Not Allowed", "text/plain");
             return;
         }
 
         try {
-            InputStreamReader isr = new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8);
-            BufferedReader br = new BufferedReader(isr);
-            String formData = br.readLine();
+            String formData = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8)).readLine();
             Map<String, String> params = HandlerUtils.parseUrlEncodedFormData(formData);
-
-            String username = params.get("username");
             String orderData = params.get("orderData");
-
-            if (orderData == null || orderData.isEmpty()) {
-                HandlerUtils.sendResponse(exchange, 400, "Bad Request: Order data is missing.", "text/plain");
-                return;
-            }
-
-            if (username == null || username.trim().isEmpty()) {
-                username = "guest-" + System.currentTimeMillis();
-            }
-
-            Optional<User> userOpt = userRepository.findByUsername(username);
-            User user;
-            if (userOpt.isPresent()) {
-                user = userOpt.get();
-            } else {
-                user = new User(username, "", Role.CUSTOMER);
-                userRepository.save(user);
-            }
 
             Map<String, String> orderParams = HandlerUtils.parseGetQuery(orderData);
             Map<Long, Integer> productQuantities = new HashMap<>();
@@ -75,10 +58,10 @@ public class AddOrderHandler implements HttpHandler {
                 return;
             }
 
-            orderService.createOrder(user.getId(), productQuantities);
+            orderService.createOrder(userOpt.get().getId(), productQuantities);
 
-            exchange.getResponseHeaders().set("Location", "/orders");
-            exchange.sendResponseHeaders(302, -1);
+            // Redirect to the new confirmation page
+            HandlerUtils.redirect(exchange, "/order-confirmed");
 
         } catch (Exception e) {
             e.printStackTrace();

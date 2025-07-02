@@ -1,4 +1,3 @@
-
 package com.myapp.aw.store.webserver.handlers;
 
 import com.myapp.aw.store.model.Order;
@@ -19,6 +18,7 @@ public class HtmlOrdersHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         try {
             List<Order> orders = orderRepository.findAll();
+            // This method call generates the full HTML page with the card layout
             String htmlResponse = HandlerUtils.convertOrderListToHtmlTable(orders);
             HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
         } catch (Exception e) {
