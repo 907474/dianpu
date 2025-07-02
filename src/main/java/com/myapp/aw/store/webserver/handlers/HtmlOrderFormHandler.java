@@ -45,16 +45,14 @@ public class HtmlOrderFormHandler implements HttpHandler {
         sb.append("#searchInput, #searchBy { padding: 8px; margin-right: 5px; box-sizing: border-box; }");
         sb.append(".quantity-input { width: 60px; padding: 5px; }");
         sb.append(".action-btn { display: inline-block; text-align: center; text-decoration: none; color: white; padding: 15px 25px; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer; margin-bottom: 1em; margin-right: 10px; }");
-        sb.append(".proceed-btn { background-color: #28a745; }");
-        sb.append(".cancel-btn { background-color: #6c757d; }");
+        sb.append(".cart-btn { background-color: #17a2b8; }");
         sb.append(".action-btn:hover { opacity: 0.8; }");
         sb.append("</style></head><body>");
         sb.append("<h1>Create a New Order</h1>");
-        sb.append("<p><a href='/'>&larr; Back to Dashboard</a></p>");
+        sb.append("<p><a href='/'>&larr; Back to Homepage</a></p>");
 
         sb.append("<div>");
-        sb.append("<button onclick='proceedToCheckout()' class='action-btn proceed-btn'>Proceed to Checkout</button>");
-        sb.append("<a href='/' class='action-btn cancel-btn'>Cancel Order</a>");
+        sb.append("<button onclick='proceedToCheckout()' class='action-btn cart-btn'>View Cart</button>");
         sb.append("</div>");
 
         sb.append("<div class='search-container'>");
@@ -67,10 +65,37 @@ public class HtmlOrderFormHandler implements HttpHandler {
         sb.append("</div>");
 
         sb.append("<form id='order-form'>");
-        sb.append(HandlerUtils.convertProductListToOrderFormTable(products));
+        sb.append(convertProductListToOrderFormTableWithEvents(products));
         sb.append("</form>");
 
         sb.append("<script>");
+        sb.append("const CART_KEY = 'shoppingCart';");
+
+        sb.append("function saveCart() {");
+        sb.append("  const inputs = document.querySelectorAll('.quantity-input');");
+        sb.append("  const cart = {};");
+        sb.append("  inputs.forEach(input => {");
+        sb.append("    const quantity = parseInt(input.value);");
+        sb.append("    if (quantity > 0) {");
+        sb.append("      const productId = input.name.split('_')[1];");
+        sb.append("      cart[productId] = quantity;");
+        sb.append("    }");
+        sb.append("  });");
+        sb.append("  localStorage.setItem(CART_KEY, JSON.stringify(cart));");
+        sb.append("}");
+
+        sb.append("function loadCart() {");
+        sb.append("  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}');");
+        sb.append("  for (const productId in cart) {");
+        sb.append("    const input = document.querySelector(`input[name='quantity_${productId}']`);");
+        sb.append("    if (input) {");
+        sb.append("      input.value = cart[productId];");
+        sb.append("    }");
+        sb.append("  }");
+        sb.append("}");
+
+        sb.append("window.addEventListener('DOMContentLoaded', loadCart);");
+
         sb.append("function filterTable() {");
         sb.append("  var input, filter, table, tr, td, i, txtValue, searchColumn;");
         sb.append("  input = document.getElementById('searchInput');");
@@ -90,15 +115,14 @@ public class HtmlOrderFormHandler implements HttpHandler {
         sb.append("    }");
         sb.append("  }");
         sb.append("}");
+
         sb.append("function proceedToCheckout() {");
-        sb.append("  const form = document.getElementById('order-form');");
-        sb.append("  const inputs = form.querySelectorAll('.quantity-input');");
+        sb.append("  saveCart();");
+        sb.append("  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '{}');");
         sb.append("  let queryParams = '';");
-        sb.append("  inputs.forEach(input => {");
-        sb.append("    if (input.value && parseInt(input.value) > 0) {");
-        sb.append("      queryParams += `&${input.name}=${input.value}`;");
-        sb.append("    }");
-        sb.append("  });");
+        sb.append("  for (const productId in cart) {");
+        sb.append("    queryParams += `&quantity_${productId}=${cart[productId]}`;");
+        sb.append("  }");
         sb.append("  if (queryParams) {");
         sb.append("    window.location.href = '/checkout?' + queryParams.substring(1);");
         sb.append("  } else {");
@@ -108,6 +132,24 @@ public class HtmlOrderFormHandler implements HttpHandler {
         sb.append("</script>");
 
         sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private String convertProductListToOrderFormTableWithEvents(List<Product> products) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table>");
+        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th><th>Quantity to Order</th></tr>");
+        for (Product p : products) {
+            sb.append("<tr>");
+            sb.append("<td>").append(p.getId()).append("</td>");
+            sb.append("<td>").append(HandlerUtils.escapeHtml(p.getSku())).append("</td>");
+            sb.append("<td>").append(HandlerUtils.escapeHtml(p.getName())).append("</td>");
+            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
+            sb.append("<td>").append(p.getStock()).append("</td>");
+            sb.append("<td><input type='number' class='quantity-input' name='quantity_").append(p.getId()).append("' min='0' placeholder='0' oninput='saveCart()'></td>");
+            sb.append("</tr>");
+        }
+        sb.append("</table>");
         return sb.toString();
     }
 }

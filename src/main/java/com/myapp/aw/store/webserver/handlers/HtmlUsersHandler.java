@@ -16,18 +16,14 @@ public class HtmlUsersHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if ("GET".equals(exchange.getRequestMethod())) {
-            try {
-                List<User> users = userRepository.findAll();
-                String htmlResponse = HandlerUtils.convertUserListToHtmlTable(users);
-                HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
-            } catch (Exception e) {
-                e.printStackTrace();
-                String errorResponse = "<h1>Error</h1><p>Could not fetch users from database.</p>";
-                HandlerUtils.sendResponse(exchange, 500, errorResponse, "text/html");
-            }
-        } else {
-            HandlerUtils.sendResponse(exchange, 405, "", null);
+        try {
+            List<User> users = userRepository.findAll();
+            String htmlResponse = HandlerUtils.convertUserListToHtmlTable(users);
+            HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorResponse = "<h1>Error</h1><p>Could not fetch users.</p>";
+            HandlerUtils.sendResponse(exchange, 500, errorResponse, "text/html");
         }
     }
 }

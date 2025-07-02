@@ -59,7 +59,7 @@ public class HtmlCheckoutHandler implements HttpHandler {
         sb.append("input[type='text'] { padding: 8px; width: 300px; margin-bottom: 1em; }");
         sb.append(".action-btn { display: inline-block; text-decoration: none; color: white !important; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; margin-right: 10px; font-size: 1em; }");
         sb.append(".confirm-btn { background-color: #28a745; }");
-        sb.append(".cancel-btn { background-color: #6c757d; }");
+        sb.append(".edit-btn { background-color: #ffc107; color: #212529 !important; }");
         sb.append(".action-btn:hover { opacity: 0.8; }");
         sb.append("</style></head><body>");
         sb.append("<h1>Confirm Your Order</h1>");
@@ -85,7 +85,7 @@ public class HtmlCheckoutHandler implements HttpHandler {
         sb.append("<input type='text' name='username' id='username'><br><br>");
         sb.append("<div>");
         sb.append("<button type='submit' class='action-btn confirm-btn'>Confirm and Place Order</button>");
-        sb.append("<a href='/' class='action-btn cancel-btn'>Back to Dashboard</a>");
+        sb.append("<a href='/order-form' class='action-btn edit-btn'>Back to Edit Order</a>");
         sb.append("</div>");
         sb.append("</form>");
 

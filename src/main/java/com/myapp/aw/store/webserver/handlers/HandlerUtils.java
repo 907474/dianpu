@@ -21,39 +21,9 @@ public final class HandlerUtils {
 
     private HandlerUtils() {}
 
-    public static String convertProductListToOrderFormTable(List<Product> products) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table>");
-        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th><th>Quantity to Order</th></tr>");
-        for (Product p : products) {
-            sb.append("<tr>");
-            sb.append("<td>").append(p.getId()).append("</td>");
-            sb.append("<td>").append(escapeHtml(p.getSku())).append("</td>");
-            sb.append("<td>").append(escapeHtml(p.getName())).append("</td>");
-            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
-            sb.append("<td>").append(p.getStock()).append("</td>");
-            sb.append("<td><input type='number' class='quantity-input' name='quantity_").append(p.getId()).append("' min='0' placeholder='0'></td>");
-            sb.append("</tr>");
-        }
-        sb.append("</table>");
-        return sb.toString();
-    }
-
-    public static String convertProductListToHtmlTable(List<Product> products) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<table>");
-        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th></tr>");
-        for (Product p : products) {
-            sb.append("<tr>");
-            sb.append("<td>").append(p.getId()).append("</td>");
-            sb.append("<td>").append(escapeHtml(p.getSku())).append("</td>");
-            sb.append("<td>").append(escapeHtml(p.getName())).append("</td>");
-            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
-            sb.append("<td>").append(p.getStock()).append("</td>");
-            sb.append("</tr>");
-        }
-        sb.append("</table>");
-        return sb.toString();
+    public static void redirect(HttpExchange exchange, String location) throws IOException {
+        exchange.getResponseHeaders().set("Location", location);
+        exchange.sendResponseHeaders(302, -1);
     }
 
     public static Map<String, String> parseGetQuery(String query) {
@@ -75,18 +45,45 @@ public final class HandlerUtils {
         return map;
     }
 
+    public static String convertProductListToHtmlTable(List<Product> products) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table>");
+        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th></tr>");
+        for (Product p : products) {
+            sb.append("<tr>");
+            sb.append("<td>").append(p.getId()).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getSku())).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getName())).append("</td>");
+            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
+            sb.append("<td>").append(p.getStock()).append("</td>");
+            sb.append("</tr>");
+        }
+        sb.append("</table>");
+        return sb.toString();
+    }
+
+    public static String convertProductListToOrderFormTable(List<Product> products) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table>");
+        sb.append("<tr><th>ID</th><th>SKU</th><th>Name</th><th>Price</th><th>Stock</th><th>Quantity to Order</th></tr>");
+        for (Product p : products) {
+            sb.append("<tr>");
+            sb.append("<td>").append(p.getId()).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getSku())).append("</td>");
+            sb.append("<td>").append(escapeHtml(p.getName())).append("</td>");
+            sb.append("<td>").append(String.format("$%.2f", p.getPrice())).append("</td>");
+            sb.append("<td>").append(p.getStock()).append("</td>");
+            sb.append("<td><input type='number' class='quantity-input' name='quantity_").append(p.getId()).append("' min='0' placeholder='0'></td>");
+            sb.append("</tr>");
+        }
+        sb.append("</table>");
+        return sb.toString();
+    }
+
     public static String convertUserListToHtmlTable(List<User> users) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><title>All Users</title><style>");
-        sb.append("body { font-family: sans-serif; margin: 2em; }");
-        sb.append("table { width: 100%; border-collapse: collapse; }");
-        sb.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
-        sb.append("th { background-color: #f2f2f2; }");
-        sb.append("tr:nth-child(even) { background-color: #f9f9f9; }");
-        sb.append("a { color: #007BFF; text-decoration: none; }");
-        sb.append("</style></head><body>");
         sb.append("<h1>All Users</h1>");
-        sb.append("<p><a href='/'>&larr; Back to Dashboard</a></p>");
+        sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
         sb.append("<table>");
         sb.append("<tr><th>ID</th><th>Username</th><th>Role</th></tr>");
         for (User u : users) {
@@ -96,23 +93,14 @@ public final class HandlerUtils {
             sb.append("<td>").append(u.getRole()).append("</td>");
             sb.append("</tr>");
         }
-        sb.append("</table></body></html>");
+        sb.append("</table>");
         return sb.toString();
     }
 
     public static String convertOrderListToHtmlTable(List<Order> orders) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<html><head><title>All Orders</title><style>");
-        sb.append("body { font-family: sans-serif; margin: 2em; }");
-        sb.append(".order-card { border: 1px solid #ccc; border-radius: 5px; margin-bottom: 1em; padding: 1em; }");
-        sb.append(".order-header { font-weight: bold; margin-bottom: 0.5em; }");
-        sb.append("table { width: 100%; border-collapse: collapse; margin-top: 0.5em; }");
-        sb.append("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
-        sb.append("th { background-color: #f2f2f2; }");
-        sb.append("a { color: #007BFF; text-decoration: none; }");
-        sb.append("</style></head><body>");
         sb.append("<h1>All Orders</h1>");
-        sb.append("<p><a href='/'>&larr; Back to Dashboard</a></p>");
+        sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
 
         if (orders.isEmpty()) {
             sb.append("<p>No orders found.</p>");
@@ -137,7 +125,6 @@ public final class HandlerUtils {
                 sb.append("</table></div>");
             }
         }
-        sb.append("</body></html>");
         return sb.toString();
     }
 
@@ -187,13 +174,13 @@ public final class HandlerUtils {
         os.close();
     }
 
-    public static String escapeJson(String value) {
-        if (value == null) return "null";
-        return value.replace("\\", "\\\\").replace("\"", "\\\"");
-    }
-
     public static String escapeHtml(String value) {
         if (value == null) return "";
         return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    public static String escapeJson(String value) {
+        if (value == null) return "null";
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

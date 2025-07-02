@@ -20,12 +20,10 @@ public class HtmlRestockHandler implements HttpHandler {
             HandlerUtils.sendResponse(exchange, 405, "", null);
             return;
         }
-
         try {
             List<Product> products = productRepository.findAll();
             String htmlResponse = generatePageWithLiveSearch(products);
             HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
-
         } catch (Exception e) {
             e.printStackTrace();
             String errorResponse = "<h1>Error</h1><p>Could not fetch products.</p>";
@@ -48,12 +46,10 @@ public class HtmlRestockHandler implements HttpHandler {
         sb.append(".restock-btn { background-color: #17a2b8; color: white; border: none; padding: 5px 10px; cursor: pointer; }");
         sb.append("</style></head><body>");
         sb.append("<h1>Restock Products</h1>");
-        sb.append("<p><a href='/'>&larr; Back to Dashboard</a></p>");
-
+        sb.append("<p><a href='/admin-dashboard'>&larr; Back to Admin Dashboard</a></p>");
         sb.append("<div class='search-container'>");
         sb.append("    <input type='text' id='searchInput' onkeyup='filterTable()' placeholder='Type to filter products by name...'>");
         sb.append("</div>");
-
         sb.append("<table><thead><tr><th>ID</th><th>SKU</th><th>Name</th><th>Current Stock</th><th>Add Stock</th><th>Action</th></tr></thead><tbody>");
         for (Product p : products) {
             sb.append("<tr>");
@@ -69,7 +65,6 @@ public class HtmlRestockHandler implements HttpHandler {
             sb.append("</tr>");
         }
         sb.append("</tbody></table>");
-
         sb.append("<script>");
         sb.append("function filterTable() {");
         sb.append("  var input, filter, table, tr, td, i, txtValue;");
@@ -78,7 +73,7 @@ public class HtmlRestockHandler implements HttpHandler {
         sb.append("  table = document.querySelector('table');");
         sb.append("  tr = table.getElementsByTagName('tr');");
         sb.append("  for (i = 1; i < tr.length; i++) {");
-        sb.append("    td = tr[i].getElementsByTagName('td')[2];"); // Column 2 is Product Name
+        sb.append("    td = tr[i].getElementsByTagName('td')[2];");
         sb.append("    if (td) {");
         sb.append("      txtValue = td.textContent || td.innerText;");
         sb.append("      if (txtValue.toUpperCase().indexOf(filter) > -1) {");
@@ -90,7 +85,6 @@ public class HtmlRestockHandler implements HttpHandler {
         sb.append("  }");
         sb.append("}");
         sb.append("</script>");
-
         sb.append("</body></html>");
         return sb.toString();
     }

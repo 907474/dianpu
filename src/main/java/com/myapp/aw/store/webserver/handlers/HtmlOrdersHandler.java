@@ -1,3 +1,4 @@
+
 package com.myapp.aw.store.webserver.handlers;
 
 import com.myapp.aw.store.model.Order;
@@ -16,18 +17,14 @@ public class HtmlOrdersHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        if ("GET".equals(exchange.getRequestMethod())) {
-            try {
-                List<Order> orders = orderRepository.findAll();
-                String htmlResponse = HandlerUtils.convertOrderListToHtmlTable(orders);
-                HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
-            } catch (Exception e) {
-                e.printStackTrace();
-                String errorResponse = "<h1>Error</h1><p>Could not fetch orders from database.</p>";
-                HandlerUtils.sendResponse(exchange, 500, errorResponse, "text/html");
-            }
-        } else {
-            HandlerUtils.sendResponse(exchange, 405, "", null);
+        try {
+            List<Order> orders = orderRepository.findAll();
+            String htmlResponse = HandlerUtils.convertOrderListToHtmlTable(orders);
+            HandlerUtils.sendResponse(exchange, 200, htmlResponse, "text/html");
+        } catch (Exception e) {
+            e.printStackTrace();
+            String errorResponse = "<h1>Error</h1><p>Could not fetch orders.</p>";
+            HandlerUtils.sendResponse(exchange, 500, errorResponse, "text/html");
         }
     }
 }
